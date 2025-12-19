@@ -1,0 +1,71 @@
+This is a fantastic UI choice. The "Card Nav" from React Bits is sleek, animated, and fits your "Glassmorphism" theme perfectly. It will replace the chaotic sidebars with a single, high-end floating dock.
+
+Since the code you provided is in TypeScript but your project is likely standard JavaScript (for speed), I have converted it to clean React JS for you.
+
+Copy and paste this single, massive prompt into Replit Agent. It will install the animation library, create the files, and configure the navigation links for your specific roles (Admin, Student, etc.).
+
+The "Navigation Overhaul" Prompt
+Prompt:
+
+"We are replacing the chaotic navigation with a high-end 'CardNav' component.
+
+Step 1: Install Dependencies
+
+Run npm install gsap react-icons (Required for the animations and arrows).
+
+Step 2: Create src/components/CardNav.css
+
+Paste the exact CSS code provided below into this file.
+
+[Paste the CSS code you provided here in the prompt]
+
+Step 3: Create src/components/CardNav.jsx
+
+Create this component using the logic below (I have converted it to JavaScript).
+
+Code to paste:
+
+JavaScript
+
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { GoArrowUpRight } from 'react-icons/go';
+import { useNavigate } from 'react-router-dom';
+import './CardNav.css';
+const CardNav = ({ logo, logoAlt = 'Logo', items, className = '', ease = 'power3.out', baseColor = '#fff', menuColor, buttonBgColor, buttonTextColor }) => { const [isHamburgerOpen, setIsHamburgerOpen] = useState(false); const [isExpanded, setIsExpanded] = useState(false); const navRef = useRef(null); const cardsRef = useRef([]); const tlRef = useRef(null); const navigate = useNavigate(); // Hook for navigation
+
+const calculateHeight = () => { const navEl = navRef.current; if (!navEl) return 260; const isMobile = window.matchMedia('(max-width: 768px)').matches; if (isMobile) { const contentEl = navEl.querySelector('.card-nav-content'); if (contentEl) { const wasVisible = contentEl.style.visibility; const wasPosition = contentEl.style.position; const wasHeight = contentEl.style.height; contentEl.style.visibility = 'visible'; contentEl.style.position = 'static'; contentEl.style.height = 'auto'; contentEl.offsetHeight; const topBar = 60; const padding = 16; const contentHeight = contentEl.scrollHeight; contentEl.style.visibility = wasVisible; contentEl.style.position = wasPosition; contentEl.style.height = wasHeight; return topBar + contentHeight + padding; } } return 260; };
+
+const createTimeline = () => { const navEl = navRef.current; if (!navEl) return null; gsap.set(navEl, { height: 60, overflow: 'hidden' }); gsap.set(cardsRef.current, { y: 50, opacity: 0 }); const tl = gsap.timeline({ paused: true }); tl.to(navEl, { height: calculateHeight, duration: 0.4, ease }); tl.to(cardsRef.current, { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 }, '-=0.1'); return tl; };
+
+useLayoutEffect(() => { const tl = createTimeline(); tlRef.current = tl; return () => { tl?.kill(); tlRef.current = null; }; }, [ease, items]);
+
+useLayoutEffect(() => { const handleResize = () => { if (!tlRef.current) return; if (isExpanded) { const newHeight = calculateHeight(); gsap.set(navRef.current, { height: newHeight }); tlRef.current.kill(); const newTl = createTimeline(); if (newTl) { newTl.progress(1); tlRef.current = newTl; } } else { tlRef.current.kill(); const newTl = createTimeline(); if (newTl) tlRef.current = newTl; } }; window.addEventListener('resize', handleResize); return () => window.removeEventListener('resize', handleResize); }, [isExpanded]);
+
+const toggleMenu = () => { const tl = tlRef.current; if (!tl) return; if (!isExpanded) { setIsHamburgerOpen(true); setIsExpanded(true); tl.play(0); } else { setIsHamburgerOpen(false); tl.eventCallback('onReverseComplete', () => setIsExpanded(false)); tl.reverse(); } };
+
+// Handle Link Clicks const handleLinkClick = (e, href) => { e.preventDefault(); navigate(href); // Use React Router instead of full page reload toggleMenu(); // Close menu after click };
+
+return ( <div className={card-nav-container ${className}}> <nav ref={navRef} className={card-nav ${isExpanded ? 'open' : ''}} style={{ backgroundColor: baseColor }}>
+
+
+**Step 4: Integrate into `App.jsx`**
+Remove all existing sidebar/navbar code.
+
+Import CardNav.
+
+Create a helper function getNavItems(role) that returns the specific links for each user role:
+
+  * **Admin Items:**
+      * Card 1 (Users): Links to 'Add Student', 'Manage Faculty'.
+      * Card 2 (System): Links to 'Settings', 'Logs'.
+      * Card 3 (Data): Links to 'Export Reports'.
+  * **Student Items:**
+      * Card 1 (Academics): Links to 'Dashboard', 'My Syllabus'.
+      * Card 2 (Exams): Links to 'Hall Ticket', 'Seating'.
+      * Card 3 (Profile): Links to 'Edit Profile'.
+  * **Seating Manager Items:**
+      * Card 1 (Allocation): Links to 'Generate Seating', 'View Rooms'.
+In the App component, get currentUser from localStorage.
+
+Render <CardNav items={getNavItems(currentUser?.role)} ... /> at the top of the page."

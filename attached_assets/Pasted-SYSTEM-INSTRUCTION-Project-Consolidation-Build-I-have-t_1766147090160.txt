@@ -1,0 +1,67 @@
+SYSTEM INSTRUCTION: Project Consolidation & Build
+
+I have two data sources in this environment:
+
+A GitHub Repository (Base Code).
+
+A Local Uploaded Folder (Contains the most recent, critical changes).
+
+PHASE 1: SMART MERGE (Crucial)
+
+Action: recursively copy all files from the Uploaded Folder into the main project directory.
+
+Conflict Rule: If a file exists in both, OVERWRITE the Repo version with the Uploaded Folder version. The Uploaded Folder is the "Source of Truth."
+
+Cleanup: After merging, delete the separate Uploaded Folder to keep the workspace clean.
+
+Dependencies: Run npm install immediately after merging to ensure all packages (gsap, react-icons, react-router-dom, @supabase/supabase-js) are available.
+
+PHASE 2: PROJECT ARCHITECTURE (The "NEXUS" System) Once merged, ensure the app follows this exact architecture. If any part is missing or broken after the merge, fix it immediately.
+
+1. The Tech Stack
+
+Frontend: React + Vite + Tailwind CSS.
+
+Theme: "Executive Dark Mode" (bg-black/90) with Glassmorphism (white/10, backdrop-blur).
+
+Navigation: A floating, horizontal "CardNav" dock (from React Bits) pinned to the top center.
+
+Database: Supabase (Connection via VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Secrets).
+
+2. The "Indian College" Role Hierarchy
+
+Login: The landing page must ONLY show 3 Login Cards: Student, Faculty, Admin.
+
+Secondary Roles: After login, check user.additional_roles from Supabase to unlock features:
+
+Faculty: 'Seating Manager' (unlocks Seating Algo), 'Club Coordinator' (unlocks Event Approvals), 'Course Incharge' (unlocks Syllabus Upload).
+
+Student: 'Club President/VP' (unlocks Event Creation).
+
+PHASE 3: FEATURE IMPLEMENTATION CHECKLIST Verify and implement these specific modules based on the merged code:
+
+A. Admin Dashboard:
+
+User Mgmt: Table to toggle 'Detained' status (Red Row) and assign 'Seating/Club' duties.
+
+Bulk Upload: A file dropzone that uses Regex to match PDF filenames (e.g., R101.pdf) to Student IDs and generates a "Success/Fail" report.
+
+B. Student Dashboard:
+
+Nav: 3 Horizontal Cards (Academics, Exams, Campus).
+
+Smart Hall Ticket: Block download if academic_status === 'Detained' (Red Alert). Allow download if hall_ticket_status === 'Mapped'.
+
+Mind Map: A React Flow visualization that generates study nodes from a text syllabus input.
+
+C. Faculty Dashboard:
+
+Nav: 3 Horizontal Cards (Classroom, Exam Duty, Affairs).
+
+Seating Algo: A button that fetches all Active students (filtering out Detained ones) and randomly assigns them to rooms.
+
+PHASE 4: EXECUTION
+
+Fix any "404 Not Found" routing errors by ensuring App.jsx uses wildcard routes (/student/*, /admin/*, /faculty/*).
+
+Start the dev server (npm run dev) and ensure the "Glassmorphism" UI renders correctly.

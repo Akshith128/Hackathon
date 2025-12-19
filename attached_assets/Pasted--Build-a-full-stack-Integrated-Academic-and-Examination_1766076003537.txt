@@ -1,0 +1,40 @@
+"Build a full-stack Integrated Academic and Examination Management System. Use a modern, high-end UI library like Shadcn/UI with Tailwind CSS. The aesthetic should be 'Executive Dark Mode'—sleek, professional, with subtle gradients and glassmorphism.
+
+Create a unified login page that redirects to 4 distinct dashboards based on roles:
+
+Student: Focus on a 'Today's Schedule' view and a progress tracker.
+
+Admin: A high-level stats overview (Events pending, Exam status).
+
+Seating Manager: A grid-based visualizer for room layouts.
+
+Club Coordinator: A clean kanban board for event approvals.
+
+Use Lucide-react icons for all navigation. Ensure the layout is fully responsive with a sidebar for desktop and a bottom-bar for mobile."
+
+Phase 2: Building the Core Modules
+Once the shell is ready, use these prompts to build the "Judges' Favorites."
+
+1. The Seating Logic (The "Smart" Tool)
+Prompt:
+
+"Add a Seating Allocation Module. Create a form where a Seating Manager can input 'Number of Students', 'Rooms available', and 'Benches per room'. Write a Python backend function that randomizes the seating to prevent cheating (no two students from the same department next to each other). Display the result in a searchable, exportable table and a visual 'Room Map'."
+
+2. The Mind Map & Study Support (The "AI" Tool)
+Prompt:
+
+"Create the 'Study Support' section for Students. Allow users to upload a syllabus PDF. Use a library like React-Flow or a simple Mermaid.js integration to generate a visual Mind Map from the syllabus topics. Add a 'Reference Library' component that lists clickable links to study materials for each node in the Mind Map."
+
+3. Hall Ticket & QR (The "Professional" Tool)
+Prompt:
+
+"Implement the Hall Ticket generation. When a student clicks 'Download', generate a beautiful, print-ready PDF using a library like @react-pdf/renderer. It must include the student's photo, exam schedule, and a functional QR code that, when scanned, shows their name and seating location (Room/Bench)."
+
+3 Features to Make You Stand Out
+Tell Replit to add these specific "extra" bits to impress the judges:
+
+Live Event Ticker: A scrolling "News Flash" on the student dashboard showing approved club events in real-time. This makes the app feel "alive."
+
+Conflict Checker: When a Club Coordinator submits an event, the system should automatically check if it overlaps with an Exam date or another event and flag it in red.
+
+One-Click Exam Mode: An admin toggle that simplifies the UI for students during exam week, putting their Hall Ticket and Seating Chart front and center.

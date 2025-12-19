@@ -1,0 +1,55 @@
+SYSTEM INSTRUCTION: NEXUS Project Integration & Launch
+
+I am initializing the final build. I have a GitHub Repo (base) and an Uploaded Folder (recent changes). You must merge them and build the complete "NEXUS" Academic Administration System.
+
+PHASE 1: SMART MERGE & DEPENDENCIES
+
+Merge Strategy: Recursively copy all files from the Uploaded Folder into the main directory. If a file exists in both, OVERWRITE the Repo version with the Uploaded Folder version. The Uploaded Folder is the "Source of Truth."
+
+Cleanup: Delete the Uploaded Folder after merging.
+
+Install: Run npm install @supabase/supabase-js gsap react-icons reactflow @react-pdf/renderer to ensure all features work.
+
+PHASE 2: DATABASE CONNECTION (The Brain)
+
+Client Setup: Create/Update src/supabaseClient.js:
+
+JavaScript
+
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+Connection Test: In App.jsx, add a temporary useEffect that runs supabase.from('users').select('count') and logs "✅ Connected" to the console.
+
+PHASE 3: ARCHITECTURE ENFORCEMENT (Indian College Model)
+
+Login Logic: The Login.jsx page must ONLY show 3 cards: Student, Faculty, Admin.
+
+Role Logic: Upon login, fetch the user's additional_roles (e.g., 'seating_manager', 'club_president') from Supabase and store them in localStorage.
+
+Navigation: Update MainLayout.jsx to use the Horizontal CardNav (pinned to top-center). Populate cards dynamically based on the user's roles (e.g., Show "Exam Duty" card only if user is a "Seating Manager").
+
+PHASE 4: CRITICAL FEATURE BUILD
+
+Admin Dashboard (/admin):
+
+Bulk Upload: Create a dropzone that takes PDFs, extracts Roll Numbers from filenames (Regex), checks Supabase, and updates hall_ticket_status.
+
+Detain Logic: A toggle switch in the User Table to set academic_status to 'Detained' (turns row Red).
+
+Student Dashboard (/student):
+
+Hall Ticket: Block download if academic_status === 'Detained' with a Red Alert.
+
+Mind Map: Integrate ReactFlow to visualize syllabus topics.
+
+Faculty Dashboard (/faculty):
+
+Seating Algo: A button that fetches all Active students and assigns them to random seats (excluding Detained students).
+
+PHASE 5: ROUTING FIX
+
+Ensure App.jsx has wildcard routes: <Route path="/student/*" ... />, <Route path="/admin/*" ... /> to prevent 404 errors on refresh.
+
+EXECUTION: Start the dev server and ensure the Glassmorphism UI renders without crashing.

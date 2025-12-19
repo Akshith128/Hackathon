@@ -1,0 +1,56 @@
+This is the final step. This prompt will instruct the Replit Agent to polish the UI, ensure all pages are connected, fix the routing, and generate a README so you can easily run it on your own machine.
+
+Copy and paste this Final Polish Prompt into Replit Agent.
+
+🚀 The "Final Polish & Export" Prompt
+SYSTEM INSTRUCTION: Final Frontend Polish & Export Preparation
+
+We are entering the finalization phase. The goal is to complete the UI, ensure all links work, and prepare the codebase for local download.
+
+PHASE 1: UI UNIFICATION (The "Glass" Look)
+
+Global Theme: Ensure index.css or App.css enforces the "Executive Dark Mode" (bg-slate-950 or #0f172a) globally.
+
+CardNav Polish: Verify src/components/CardNav.css forces the Horizontal Layout (flex-direction: row) and is pinned to the top-center (position: fixed, z-index: 50).
+
+Dashboard Layouts: Ensure StudentDashboard, FacultyDashboard, and AdminDashboard all use the MainLayout wrapper so the navigation appears correctly on every page.
+
+PHASE 2: FEATURE COMPLETION (Frontend Check)
+
+Student View: Ensure the "Mind Map" card has a visible Input Field and "Generate" button. Ensure the "Hall Ticket" card has conditional logic (Red Box for 'Detained', Green Button for 'Mapped').
+
+Admin View: Ensure the "Bulk Upload" area is visible (Drag & Drop zone) and the "User Table" has the specific "Detained" toggle switches.
+
+Faculty View: Ensure the "Seating Algorithm" page exists with a "Generate Seating" button and a placeholder Grid View for the results.
+
+PHASE 3: ROUTING & CONNECTIONS
+
+Fix 404s: Verify App.jsx uses wildcard routes:
+
+<Route path="/student/*" ... />
+
+<Route path="/faculty/*" ... />
+
+<Route path="/admin/*" ... />
+
+Supabase Hook: Ensure src/supabaseClient.js is imported in App.jsx and tested (log connection status to console).
+
+PHASE 4: LOCAL RUN PREPARATION
+
+Cleanup: Delete any temporary "Uploaded Folders" or duplicate files.
+
+Environment: Create a file named .env.example in the root directory. Add the following lines to it (so the user knows what keys to add locally):
+
+Plaintext
+
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+Documentation: Create a README_LOCAL.md file with steps:
+
+npm install
+
+Rename .env.example to .env and add keys.
+
+npm run dev
+
+EXECUTION: Apply these fixes immediately so the user can download the project.

@@ -1,0 +1,73 @@
+"Refactor the UI to match the 'React Bits' Horizontal Card design exactly, and optimize all page layouts to accommodate it.
+
+1. Update src/components/CardNav.css (The Visual Fix)
+
+Replace the existing CSS with this Exact Horizontal Layout code:
+
+CSS
+
+.card-nav-container {
+  position: fixed; /* Fixed so it floats while scrolling */
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 900px; /* Wider to fit 3 horizontal cards */
+  z-index: 1000;
+}
+.card-nav { display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+.card-nav-top { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
+
+.card-nav-content { display: flex; flex-direction: row; /* FORCE HORIZONTAL / gap: 1rem; padding: 1rem; opacity: 0; / Height is controlled by JS/GSAP */ }
+
+.nav-card { flex: 1; /* Each card takes equal width / height: 200px; / Fixed height for uniformity */ border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
+
+.nav-card:hover { transform: translateY(-5px); }
+
+.nav-card-label { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+
+.nav-card-links { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.nav-card-link { color: inherit; text-decoration: none; opacity: 0.8; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+
+.nav-card-link:hover { opacity: 1; text-decoration: underline; }
+
+
+**2. Create `src/components/MainLayout.jsx` (The Page Optimizer)**
+We need a wrapper to prevent the Floating Nav from covering content.
+
+Code:
+
+JavaScript
+
+import React from 'react';
+import CardNav from './CardNav';
+import logo from '../assets/logo.svg'; // Ensure logo path is correct
+const MainLayout = ({ children, userRole }) => { // Define Menus based on Role const getNavItems = (role) => { if (role === 'admin') return [ { label: 'Users', bgColor: '#1e293b', textColor: '#fff', links: [{ label: 'Manage Students', href: '/admin/users' }, { label: 'Bulk Upload', href: '/admin/bulk' }] }, { label: 'Exams', bgColor: '#334155', textColor: '#fff', links: [{ label: 'Schedule', href: '/admin/exams' }, { label: 'Reports', href: '/admin/reports' }] }, { label: 'System', bgColor: '#475569', textColor: '#fff', links: [{ label: 'Settings', href: '/admin/settings' }] } ]; if (role === 'student') return [ { label: 'My Academics', bgColor: '#0f172a', textColor: '#fff', links: [{ label: 'Mind Map', href: '/student/mindmap' }, { label: 'Results', href: '/student/results' }] }, { label: 'Exams', bgColor: '#1e1b4b', textColor: '#fff', links: [{ label: 'Hall Ticket', href: '/student/ticket' }, { label: 'Seating', href: '/student/seating' }] }, { label: 'Events', bgColor: '#312e81', textColor: '#fff', links: [{ label: 'Calendar', href: '/student/events' }] } ]; // Default Fallback return [ { label: 'Nexus', bgColor: '#000', textColor: '#fff', links: [{ label: 'Home', href: '/' }] } ]; };
+
+return (
+
+  {/* The Content Container - Padded so Nav doesn't overlap */}
+  <div className="pt-32 px-6 pb-12 max-w-7xl mx-auto">
+    {children}
+  </div>
+</div>
+); }; export default MainLayout;
+
+
+**3. Integrate Layout into `App.jsx`**
+Wrap every Route element with this new Layout.
+
+Example:
+
+JavaScript
+
+<Route path="/admin/dashboard" element={
+  <ProtectedRoute role="admin">
+    <MainLayout userRole="admin">
+      <AdminDashboard />
+    </MainLayout>
+  </ProtectedRoute>
+} />
+Apply this to Student, Seating Manager, and Coordinator routes as well."
