@@ -4,18 +4,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Download, Shuffle, Loader2, ChevronRight } from 'lucide-react';
+import { Search, Download, Shuffle, Loader2, ChevronRight, Plus } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSeatingAllocation } from '@/hooks/useSeatingAllocation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SeatingDashboard() {
   const [selectedExam, setSelectedExam] = useState<string>('');
   const [selectedRoom, setSelectedRoom] = useState<string>('');
+  const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
+  const [isAddExamOpen, setIsAddExamOpen] = useState(false);
+  const [newRoom, setNewRoom] = useState({ roomNumber: '', capacity: '', rows: '', columns: '', building: '' });
+  const [newExam, setNewExam] = useState({
+    subjectName: '',
+    subjectCode: '',
+    examDate: '',
+    startTime: '09:00',
+    endTime: '12:00',
+    semester: '',
+    department: ''
+  });
+  const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingExam, setIsCreatingExam] = useState(false);
   const { allocateSmartSeating, getSeatingGrid } = useSeatingAllocation();
-  
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const { data: exams, isLoading: examsLoading } = useQuery({
     queryKey: ['exams'],
     queryFn: async () => {
@@ -40,6 +58,68 @@ export default function SeatingDashboard() {
     }
   };
 
+  const handleCreateRoom = async () => {
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomNumber: newRoom.roomNumber,
+          capacity: parseInt(newRoom.capacity),
+          rows: parseInt(newRoom.rows),
+          columns: parseInt(newRoom.columns),
+          building: newRoom.building || 'Main Block'
+        })
+      });
+
+      if (response.ok) {
+        toast({ title: 'Success', description: 'Room created successfully' });
+        queryClient.invalidateQueries({ queryKey: ['rooms'] });
+        setIsAddRoomOpen(false);
+        setNewRoom({ roomNumber: '', capacity: '', rows: '', columns: '', building: '' });
+      } else {
+        toast({ title: 'Error', description: 'Failed to create room', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to create room', variant: 'destructive' });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateExam = async () => {
+    setIsCreatingExam(true);
+    try {
+      const response = await fetch('/api/exams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subjectName: newExam.subjectName,
+          subjectCode: newExam.subjectCode,
+          examDate: newExam.examDate,
+          startTime: newExam.startTime,
+          endTime: newExam.endTime,
+          semester: parseInt(newExam.semester),
+          department: newExam.department
+        })
+      });
+
+      if (response.ok) {
+        toast({ title: 'Success', description: 'Exam created successfully' });
+        queryClient.invalidateQueries({ queryKey: ['exams'] });
+        setIsAddExamOpen(false);
+        setNewExam({ subjectName: '', subjectCode: '', examDate: '', startTime: '09:00', endTime: '12:00', semester: '', department: '' });
+      } else {
+        toast({ title: 'Error', description: 'Failed to create exam', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to create exam', variant: 'destructive' });
+    } finally {
+      setIsCreatingExam(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -47,18 +127,186 @@ export default function SeatingDashboard() {
           <h1 className="text-3xl font-bold">Seating Allocation</h1>
           <p className="text-muted-foreground">Smart seat assignment ensuring no department clustering.</p>
         </div>
-        <Button 
-          onClick={handleAllocate} 
-          disabled={!selectedExam || !selectedRoom || allocateSmartSeating.isPending}
-          className="gap-2"
-        >
-          {allocateSmartSeating.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Shuffle className="w-4 h-4" />
-          )}
-          {allocateSmartSeating.isPending ? 'Allocating...' : 'Auto-Allocate'}
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isAddExamOpen} onOpenChange={setIsAddExamOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Add Exam
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Exam</DialogTitle>
+                <DialogDescription>Add a new exam for seating allocation</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="subjectName">Subject Name</Label>
+                    <Input
+                      id="subjectName"
+                      placeholder="e.g., Data Structures"
+                      value={newExam.subjectName}
+                      onChange={(e) => setNewExam({ ...newExam, subjectName: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subjectCode">Subject Code</Label>
+                    <Input
+                      id="subjectCode"
+                      placeholder="e.g., CS201"
+                      value={newExam.subjectCode}
+                      onChange={(e) => setNewExam({ ...newExam, subjectCode: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="examDate">Exam Date</Label>
+                  <Input
+                    id="examDate"
+                    type="date"
+                    value={newExam.examDate}
+                    onChange={(e) => setNewExam({ ...newExam, examDate: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={newExam.startTime}
+                      onChange={(e) => setNewExam({ ...newExam, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={newExam.endTime}
+                      onChange={(e) => setNewExam({ ...newExam, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="semester">Semester</Label>
+                    <Input
+                      id="semester"
+                      type="number"
+                      placeholder="e.g., 3"
+                      value={newExam.semester}
+                      onChange={(e) => setNewExam({ ...newExam, semester: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Input
+                      id="department"
+                      placeholder="e.g., Computer Science"
+                      value={newExam.department}
+                      onChange={(e) => setNewExam({ ...newExam, department: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddExamOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreateExam} disabled={isCreatingExam || !newExam.subjectName || !newExam.subjectCode || !newExam.examDate || !newExam.semester || !newExam.department}>
+                  {isCreatingExam ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Create Exam
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isAddRoomOpen} onOpenChange={setIsAddRoomOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Add Room
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Room</DialogTitle>
+                <DialogDescription>Add a new room for seating allocation</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="roomNumber">Room Number</Label>
+                  <Input
+                    id="roomNumber"
+                    placeholder="e.g., LH-101"
+                    value={newRoom.roomNumber}
+                    onChange={(e) => setNewRoom({ ...newRoom, roomNumber: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="rows">Rows</Label>
+                    <Input
+                      id="rows"
+                      type="number"
+                      placeholder="e.g., 10"
+                      value={newRoom.rows}
+                      onChange={(e) => setNewRoom({ ...newRoom, rows: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="columns">Columns</Label>
+                    <Input
+                      id="columns"
+                      type="number"
+                      placeholder="e.g., 6"
+                      value={newRoom.columns}
+                      onChange={(e) => setNewRoom({ ...newRoom, columns: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    placeholder="e.g., 60"
+                    value={newRoom.capacity}
+                    onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="building">Building (Optional)</Label>
+                  <Input
+                    id="building"
+                    placeholder="e.g., Main Block"
+                    value={newRoom.building}
+                    onChange={(e) => setNewRoom({ ...newRoom, building: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddRoomOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreateRoom} disabled={isCreating || !newRoom.roomNumber || !newRoom.rows || !newRoom.columns || !newRoom.capacity}>
+                  {isCreating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Create Room
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button
+            onClick={handleAllocate}
+            disabled={!selectedExam || !selectedRoom || allocateSmartSeating.isPending}
+            className="gap-2"
+          >
+            {allocateSmartSeating.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Shuffle className="w-4 h-4" />
+            )}
+            {allocateSmartSeating.isPending ? 'Allocating...' : 'Auto-Allocate'}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -163,7 +411,7 @@ export default function SeatingDashboard() {
                               };
                               return (dept && colors[dept]) || 'bg-emerald-500';
                             };
-                            
+
                             return (
                               <Tooltip key={`${rowIdx}-${colIdx}`}>
                                 <TooltipTrigger asChild>

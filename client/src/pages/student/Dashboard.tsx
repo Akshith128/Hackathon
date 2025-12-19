@@ -3,11 +3,12 @@ import { useApp } from '@/context/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ReactFlow, Background, Controls, Handle, Position, MarkerType } from 'reactflow';
+import { ReactFlow, Background, Controls, Handle, Position, MarkerType, type Edge, type Node } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Calendar, Clock, MapPin, Download, QrCode, BookOpen, ExternalLink, GraduationCap, Trophy, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -65,21 +66,72 @@ const initialEdges = [
   { id: 'e2-5', source: '2', target: '5', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e3-6', source: '3', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
   { id: 'e3-7', source: '3', target: '7', markerEnd: { type: MarkerType.ArrowClosed } },
-];
+] as Edge[];
 
 const StudyMindMap = () => {
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    // Simulate AI Processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      // Generate "AI" nodes based on file name length or random
+      const newNodes = [
+        { id: '1', position: { x: 250, y: 0 }, data: { label: file.name.split('.')[0] + ' Core' }, type: 'input', style: { background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 'bold' } },
+        { id: '2', position: { x: 100, y: 100 }, data: { label: 'Unit 1: Intro' }, style: { background: '#1e293b', color: '#e2e8f0', border: '1px solid #8b5cf6' } },
+        { id: '3', position: { x: 400, y: 100 }, data: { label: 'Unit 2: Advanced' }, style: { background: '#1e293b', color: '#e2e8f0', border: '1px solid #8b5cf6' } },
+        { id: '4', position: { x: 0, y: 200 }, data: { label: 'Key Concepts' } },
+        { id: '5', position: { x: 200, y: 200 }, data: { label: 'Case Studies' } },
+      ];
+      const newEdges: Edge[] = [
+        { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#8b5cf6' } },
+        { id: 'e1-3', source: '1', target: '3', animated: true, style: { stroke: '#8b5cf6' } },
+        { id: 'e2-4', source: '2', target: '4' },
+        { id: 'e2-5', source: '2', target: '5' },
+      ];
+      setNodes(newNodes);
+      setEdges(newEdges);
+    }, 2000);
+  };
+
   return (
-    <div className="h-[400px] w-full rounded-xl border border-border bg-card/50 overflow-hidden" data-testid="mind-map">
-      <ReactFlow 
-        nodes={initialNodes} 
-        edges={initialEdges} 
-        fitView
-        attributionPosition="bottom-right"
-        className="bg-black/20"
-      >
-        <Background color="#444" gap={16} />
-        <Controls />
-      </ReactFlow>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="font-semibold flex items-center gap-2"><BookOpen className="w-4 h-4" /> AI Syllabus Mapper</h3>
+        <div className="relative">
+          <input type="file" onChange={handleFileUpload} className="hidden" id="syllabus-upload" accept=".pdf" />
+          <Button variant="outline" size="sm" asChild disabled={isProcessing}>
+            <label htmlFor="syllabus-upload" className="cursor-pointer flex items-center gap-2">
+              {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+              {isProcessing ? "Analyzing..." : "Upload Syllabus PDF"}
+            </label>
+          </Button>
+        </div>
+      </div>
+      <div className="h-[400px] w-full rounded-xl border border-border bg-card/50 overflow-hidden relative" data-testid="mind-map">
+        {isProcessing && (
+          <div className="absolute inset-0 bg-black/50 z-10 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+            <Loader2 className="w-10 h-10 animate-spin mb-4 text-primary" />
+            <p className="animate-pulse">AI is extracting topics from syllabus...</p>
+          </div>
+        )}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          fitView
+          attributionPosition="bottom-right"
+          className="bg-black/20"
+        >
+          <Background color="#444" gap={16} />
+          <Controls />
+        </ReactFlow>
+      </div>
     </div>
   );
 };
@@ -88,97 +140,97 @@ const StudyMindMap = () => {
 const HallTicket = () => {
   return (
     <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white text-black border-none shadow-2xl" asChild>
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="max-w-3xl p-0 overflow-hidden bg-white text-black border-none shadow-2xl rounded-2xl"
       >
-      <div className="flex flex-col h-full" id="print-area">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-               <GraduationCap className="w-6 h-6" />
-             </div>
-             <div>
-               <h2 className="text-xl font-bold font-display">Nexus University</h2>
-               <p className="text-sm opacity-70">Semester End Examinations - Winter 2025</p>
-             </div>
-          </div>
-          <div className="text-right">
-            <Badge variant="outline" className="border-white/30 text-white">OFFICIAL</Badge>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-8 flex gap-8">
-          <div className="flex-1 space-y-6">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-               <div>
-                 <p className="text-slate-500">Student Name</p>
-                 <p className="font-bold text-lg" data-testid="student-name">Alex Johnson</p>
-               </div>
-               <div>
-                 <p className="text-slate-500">Roll Number</p>
-                 <p className="font-bold text-lg font-mono">CS-2025-042</p>
-               </div>
-               <div>
-                 <p className="text-slate-500">Department</p>
-                 <p className="font-bold">Computer Science</p>
-               </div>
-               <div>
-                 <p className="text-slate-500">Semester</p>
-                 <p className="font-bold">VI</p>
-               </div>
+        <div className="flex flex-col h-full" id="print-area">
+          {/* Header */}
+          <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold font-display">Nexus University</h2>
+                <p className="text-sm opacity-70">Semester End Examinations - Winter 2025</p>
+              </div>
             </div>
-
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-100">
-                  <tr>
-                    <th className="p-2 text-left">Date</th>
-                    <th className="p-2 text-left">Time</th>
-                    <th className="p-2 text-left">Subject</th>
-                    <th className="p-2 text-left">Code</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  <tr><td className="p-2">15 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Data Structures</td><td className="p-2 text-slate-500">CS301</td></tr>
-                  <tr><td className="p-2">17 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Database Mgmt</td><td className="p-2 text-slate-500">CS302</td></tr>
-                  <tr><td className="p-2">19 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Op. Systems</td><td className="p-2 text-slate-500">CS303</td></tr>
-                </tbody>
-              </table>
+            <div className="text-right">
+              <Badge variant="outline" className="border-white/30 text-white">OFFICIAL</Badge>
             </div>
           </div>
 
-          <div className="w-64 space-y-4 flex flex-col items-center border-l pl-8">
-            <div className="w-32 h-40 bg-slate-200 rounded-md overflow-hidden border">
-               <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Student" className="w-full h-full object-cover" />
-            </div>
-            
-            <div className="bg-white p-2 border rounded-lg shadow-sm">
-              <QrCode className="w-32 h-32" />
-            </div>
-            <p className="text-xs text-center text-slate-500 max-w-[150px]">
-              Scan to verify identity and seating location.
-            </p>
+          {/* Content */}
+          <div className="p-8 flex gap-8">
+            <div className="flex-1 space-y-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-500">Student Name</p>
+                  <p className="font-bold text-lg" data-testid="student-name">Alex Johnson</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Roll Number</p>
+                  <p className="font-bold text-lg font-mono">CS-2025-042</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Department</p>
+                  <p className="font-bold">Computer Science</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Semester</p>
+                  <p className="font-bold">VI</p>
+                </div>
+              </div>
 
-            <div className="w-full pt-4 border-t text-center">
-              <p className="font-display font-bold text-lg text-primary">ROOM: 304</p>
-              <p className="text-sm font-medium">Seat: A-12</p>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="p-2 text-left">Date</th>
+                      <th className="p-2 text-left">Time</th>
+                      <th className="p-2 text-left">Subject</th>
+                      <th className="p-2 text-left">Code</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    <tr><td className="p-2">15 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Data Structures</td><td className="p-2 text-slate-500">CS301</td></tr>
+                    <tr><td className="p-2">17 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Database Mgmt</td><td className="p-2 text-slate-500">CS302</td></tr>
+                    <tr><td className="p-2">19 Dec</td><td className="p-2">10:00 AM</td><td className="p-2 font-medium">Op. Systems</td><td className="p-2 text-slate-500">CS303</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="w-64 space-y-4 flex flex-col items-center border-l pl-8">
+              <div className="w-32 h-40 bg-slate-200 rounded-md overflow-hidden border">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Student" className="w-full h-full object-cover" />
+              </div>
+
+              <div className="bg-white p-2 border rounded-lg shadow-sm">
+                <QrCode className="w-32 h-32" />
+              </div>
+              <p className="text-xs text-center text-slate-500 max-w-[150px]">
+                Scan to verify identity and seating location.
+              </p>
+
+              <div className="w-full pt-4 border-t text-center">
+                <p className="font-display font-bold text-lg text-primary">ROOM: 304</p>
+                <p className="text-sm font-medium">Seat: A-12</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="bg-slate-50 p-4 border-t flex justify-between items-center text-sm text-slate-500 mt-auto">
-          <div className="flex gap-4">
-             {/* PDF DOWNLOAD BUTTON */}
-             <PDFDownloadLink
-                document={<HallTicketPDF 
-                  studentName="Alex Johnson" 
-                  rollNumber="CS-2025-042" 
+          {/* Footer */}
+          <div className="bg-slate-50 p-4 border-t flex justify-between items-center text-sm text-slate-500 mt-auto">
+            <div className="flex gap-4">
+              {/* PDF DOWNLOAD BUTTON */}
+              <PDFDownloadLink
+                document={<HallTicketPDF
+                  studentName="Alex Johnson"
+                  rollNumber="CS-2025-042"
                   dept="Computer Science"
                   studentId="student-001"
                   roomNumber="304"
@@ -191,25 +243,25 @@ const HallTicket = () => {
                   ]}
                 />}
                 fileName="hall-ticket-2025.pdf"
-             >
+              >
                 {({ blob, url, loading, error }) => (
-                  <Button 
-                    size="sm" 
-                    disabled={loading} 
+                  <Button
+                    size="sm"
+                    disabled={loading}
                     data-testid="button-download-pdf"
                   >
                     {loading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <Download className="w-3 h-3 mr-2" />}
                     {loading ? 'Generating PDF...' : 'Download PDF'}
                   </Button>
                 )}
-             </PDFDownloadLink>
-          </div>
-          <div className="space-x-4">
-            <span>Controller of Examinations</span>
-            <span>Principal</span>
+              </PDFDownloadLink>
+            </div>
+            <div className="space-x-4">
+              <span>Controller of Examinations</span>
+              <span>Principal</span>
+            </div>
           </div>
         </div>
-      </div>
       </motion.div>
     </DialogContent>
   );
@@ -218,14 +270,15 @@ const HallTicket = () => {
 export default function StudentDashboard() {
   const { examMode } = useApp();
   const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
 
   // 📍 Debug: Component mount and user check
   useEffect(() => {
     console.log('📊 [STUDENT_DASHBOARD] Component mounted');
-    
+
     const currentUserJson = localStorage.getItem('currentUser');
     const currentUser = currentUserJson ? JSON.parse(currentUserJson) : null;
-    
+
     console.log('📊 [STUDENT_DASHBOARD] Current user from localStorage:', {
       exists: !!currentUser,
       user: currentUser ? {
@@ -235,9 +288,11 @@ export default function StudentDashboard() {
         additional_roles: currentUser.additional_roles
       } : 'null'
     });
-    
+
     if (!currentUser) {
       console.error('❌ [STUDENT_DASHBOARD] No current user found! Dashboard rendering without user context.');
+    } else {
+      setUser(currentUser);
     }
   }, []);
 
@@ -263,10 +318,10 @@ export default function StudentDashboard() {
           <p className="text-muted-foreground">Your academic information will appear here.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-           <Dialog>
+          <Dialog>
             <DialogTrigger asChild>
-              <Button 
-                variant={examMode ? "destructive" : "default"} 
+              <Button
+                variant={examMode ? "destructive" : "default"}
                 className={cn("gap-2 shadow-lg hover:shadow-primary/20 w-full md:w-auto", examMode && "animate-pulse")}
                 data-testid="button-hall-ticket"
               >
@@ -275,22 +330,22 @@ export default function StudentDashboard() {
               </Button>
             </DialogTrigger>
             <HallTicket />
-           </Dialog>
+          </Dialog>
         </div>
       </div>
 
       {examMode && (
-         <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-4 animate-in slide-in-from-top-4" data-testid="alert-exam-mode">
-           <AlertCircle className="w-6 h-6 text-red-500" />
-           <div>
-             <h3 className="font-bold text-red-500">Examination Mode Active</h3>
-             <p className="text-sm text-red-400">All non-essential modules are minimized. Focus on your upcoming exams.</p>
-           </div>
-         </div>
+        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-4 animate-in slide-in-from-top-4" data-testid="alert-exam-mode">
+          <AlertCircle className="w-6 h-6 text-red-500" />
+          <div>
+            <h3 className="font-bold text-red-500">Examination Mode Active</h3>
+            <p className="text-sm text-red-400">All non-essential modules are minimized. Focus on your upcoming exams.</p>
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {/* Left Col */}
         <div className="md:col-span-2 space-y-6">
           <motion.div
@@ -298,18 +353,18 @@ export default function StudentDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0, duration: 0.4 }}
           >
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" /> Today's Schedule
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center p-8 text-center">
-                <p className="text-muted-foreground text-sm">No classes scheduled for today. Check back later.</p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" /> Today's Schedule
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center p-8 text-center">
+                  <p className="text-muted-foreground text-sm">No classes scheduled for today. Check back later.</p>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
 
         </div>
@@ -321,18 +376,32 @@ export default function StudentDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" /> Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center p-8 text-center">
-                <p className="text-muted-foreground text-sm">Your academic progress will appear here once you are enrolled.</p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" /> Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-primary/10 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-primary">{user?.credits || 0}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Credits Earned</p>
+                    </div>
+                    <div className="p-4 bg-red-500/10 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-red-500">{user?.backlogs || 0}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Backlogs</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t text-center">
+                    <Badge variant={user?.academic_status === 'active' ? "default" : "destructive"}>
+                      Status: {user?.academic_status?.toUpperCase() || 'UNKNOWN'}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
 
           <motion.div
@@ -340,17 +409,17 @@ export default function StudentDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
           >
-          <Card className="glass-card bg-gradient-to-br from-primary/20 to-transparent border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Upcoming Hackathon</CardTitle>
-            </CardHeader>
-            <CardContent>
-               <p className="text-sm text-muted-foreground mb-4">
-                 Join the annual university hackathon. 48 hours of code, coffee, and creation.
-               </p>
-               <Button className="w-full">Register Now</Button>
-            </CardContent>
-          </Card>
+            <Card className="glass-card bg-gradient-to-br from-primary/20 to-transparent border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg">Upcoming Hackathon</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Join the annual university hackathon. 48 hours of code, coffee, and creation.
+                </p>
+                <Button className="w-full">Register Now</Button>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
       </div>

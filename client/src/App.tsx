@@ -20,6 +20,9 @@ import SeatingDashboard from "@/pages/seating/Dashboard";
 import ClubDashboard from "@/pages/club/Dashboard";
 import BulkUpload from "@/pages/admin/BulkUpload";
 import SeatingAlgorithm from "@/pages/faculty/SeatingAlgorithm";
+import Attendance from "@/pages/faculty/Attendance";
+import SyllabusManager from "@/pages/faculty/Syllabus";
+import CampusChatbot from "@/components/CampusChatbot";
 
 interface CurrentUser {
   id: string;
@@ -61,7 +64,7 @@ const getNavItemsForRole = (role: 'student' | 'faculty' | 'admin'): CardNavItem[
       }
     ];
   }
-  
+
   if (role === 'faculty') {
     return [
       {
@@ -93,7 +96,7 @@ const getNavItemsForRole = (role: 'student' | 'faculty' | 'admin'): CardNavItem[
       }
     ];
   }
-  
+
   if (role === 'admin') {
     return [
       {
@@ -125,30 +128,30 @@ const getNavItemsForRole = (role: 'student' | 'faculty' | 'admin'): CardNavItem[
       }
     ];
   }
-  
+
   return [];
 };
 
-function ProtectedRoute({ 
-  requiredRole, 
-  children 
-}: { 
+function ProtectedRoute({
+  requiredRole,
+  children
+}: {
   requiredRole: 'student' | 'faculty' | 'admin',
   children: React.ReactNode
 }) {
   const currentUserJson = localStorage.getItem('currentUser');
-  
+
   // 📍 Step A: Check if user exists
   console.log('🛡️ [PROTECTED_ROUTE] Checking access for required role:', requiredRole);
   console.log('🛡️ [PROTECTED_ROUTE] localStorage content:', currentUserJson ? 'EXISTS' : 'MISSING');
-  
+
   if (!currentUserJson) {
     console.warn('⚠️ [PROTECTED_ROUTE] No user found in localStorage, redirecting to login');
     return <Redirect to="/" />;
   }
 
   const currentUser: CurrentUser = JSON.parse(currentUserJson);
-  
+
   // 📍 Step B: Log parsed user
   console.log('🛡️ [PROTECTED_ROUTE] Parsed user from localStorage:', {
     id: currentUser.id,
@@ -165,12 +168,12 @@ function ProtectedRoute({
       'admin': '/admin/dashboard',
     };
     console.warn(`⚠️ [PROTECTED_ROUTE] Role mismatch. User role: "${currentUser.role}", Required: "${requiredRole}". Redirecting...`);
-    console.log('🛡️ [PROTECTED_ROUTE] Role comparison:', { 
-      userRole: currentUser.role, 
+    console.log('🛡️ [PROTECTED_ROUTE] Role comparison:', {
+      userRole: currentUser.role,
       userRoleType: typeof currentUser.role,
-      requiredRole, 
+      requiredRole,
       requiredRoleType: typeof requiredRole,
-      match: currentUser.role === requiredRole 
+      match: currentUser.role === requiredRole
     });
     return <Redirect to={roleMap[currentUser.role] || '/'} />;
   }
@@ -196,7 +199,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Login} />
       <Route path="/change-password" component={ChangePassword} />
-      
+
       {/* Student Routes */}
       <Route path="/student/*">
         {currentUser ? (
@@ -216,7 +219,9 @@ function Router() {
           <ProtectedRoute requiredRole="faculty">
             <MainLayout user={currentUser} navItems={getNavItemsForRole('faculty')}>
               <Switch>
-                <Route path="/seating-algo" component={SeatingAlgorithm} />
+                <Route path="/faculty/seating-algo" component={SeatingAlgorithm} />
+                <Route path="/faculty/attendance" component={Attendance} />
+                <Route path="/faculty/syllabus" component={SyllabusManager} />
                 <Route component={SeatingDashboard} />
               </Switch>
             </MainLayout>
@@ -264,7 +269,7 @@ function App() {
           .from('users')
           .select('count')
           .single();
-        
+
         if (error) {
           console.warn('⚠️ Supabase connection warning:', error.message);
         } else {
@@ -287,6 +292,7 @@ function App() {
           </AppLayout>
         </ErrorBoundary>
         <Toaster />
+        {currentUser && <CampusChatbot />}
       </AppProvider>
     </QueryClientProvider>
   );

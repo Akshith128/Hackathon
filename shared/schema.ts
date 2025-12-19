@@ -16,6 +16,8 @@ export const users = pgTable("users", {
   academic_status: text("academic_status").default('active'), // active, detained
   additional_roles: text("additional_roles").array(), // seating_manager, club_coordinator
   designation: text("designation"), // For faculty
+  credits: integer("credits").default(0),
+  backlogs: integer("backlogs").default(0),
 });
 
 // Events/Club activities
@@ -96,18 +98,47 @@ export const systemConfig = pgTable("system_config", {
 });
 
 // Insert Schemas
-export const insertUserSchema = createInsertSchema(users).pick({ 
-  id: true, 
-  role: true, 
-  password: true, 
-  name: true, 
-  department: true, 
-  year: true, 
-  dob: true, 
-  club_name: true, 
-  academic_status: true, 
-  additional_roles: true, 
-  designation: true 
+// Attendance
+export const attendance = pgTable("attendance", {
+  id: text("id").primaryKey(),
+  studentId: text("student_id").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD
+  status: text("status").notNull(), // present, absent
+  courseId: text("course_id"),
+  markedBy: text("marked_by").notNull(), // faculty id
+});
+
+// Syllabus
+export const syllabus = pgTable("syllabus", {
+  id: text("id").primaryKey(),
+  subject: text("subject").notNull(),
+  topic: text("topic").notNull(),
+  status: text("status").notNull().default('pending'), // pending, completed
+  totalUnits: integer("total_units").default(1),
+});
+
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({ id: true });
+export const insertSyllabusSchema = createInsertSchema(syllabus).omit({ id: true });
+
+export type Attendance = typeof attendance.$inferSelect;
+export type InsertAttendance = typeof attendance.$inferInsert;
+export type Syllabus = typeof syllabus.$inferSelect;
+export type InsertSyllabus = typeof syllabus.$inferInsert;
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  id: true,
+  role: true,
+  password: true,
+  name: true,
+  department: true,
+  year: true,
+  dob: true,
+  club_name: true,
+  academic_status: true,
+  additional_roles: true,
+  designation: true,
+  credits: true,
+  backlogs: true
 }).required({ id: true, role: true, password: true, name: true });
 export const insertEventSchema = createInsertSchema(events).omit({ id: true, createdAt: true });
 export const insertExamSchema = createInsertSchema(exams).omit({ id: true });
